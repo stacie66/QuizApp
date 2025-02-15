@@ -107,7 +107,7 @@ lib/
 ## Getting Started 🚀
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/QUIZAPP.git
+   git clone https://github.com/stacie66/QuizApp.git
    ```
 2. **Install Dependencies**:
    ```bash
@@ -130,12 +130,8 @@ We welcome contributions! If you'd like to contribute, please follow these steps
 
 ---
 
-## License 📜
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
 ## Acknowledgments 🙏
+- **Firebase**: My Teammates 
 - **OpenAI**: For providing the AI models used for summarization and Q/A generation.
 - **Flutter**: For enabling a beautiful and responsive UI.
 - **Firebase**: For seamless backend integration.
@@ -144,25 +140,18 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact 📧
 For any questions or feedback, feel free to reach out:
-- **Email**: your-email@example.com
-- **GitHub**: [your-username](https://github.com/your-username)
+- **GitHub**: [stacie](https://github.com/stacie66/QuizApp.git)
 
 ---
 
 ## Images 🖼️
-<!-- Leave space for images after creating them in Figma -->
+
 
 ---
 
-Made with ❤️ by [Your Name/Team Name]
+Made with ❤️ by [Team Vicious]
 ```
 
 ---
 
-### **Key Changes**
-1. **Simplified**: Removed unnecessary details like icon positions.
-2. **Emojis**: Added emojis to make it visually engaging.
-3. **Space for Images**: Left a placeholder for images after you create them in Figma.
-4. **Professional Yet Fun**: Kept the tone professional but added a touch of creativity with emojis.
-
-Let me know if you need further adjustments! 😊
+Enjoy! 🥂
