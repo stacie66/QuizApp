@@ -11,6 +11,7 @@ import 'package:flashcards/src/features/home/screens/home_screen.dart';
 import 'package:flashcards/src/features/flashcards/screens/collection.dart';
 import 'package:flashcards/src/features/chats/screens/chat_screen.dart';
 import 'package:flashcards/src/features/profile/screens/profile_screen.dart';
+import 'package:flashcards/src/features/authentication/controllers/onboarding.dart';
 import 'package:flashcards/src/utils/constants/colors.dart';
 import 'package:flashcards/src/utils/theme/theme.dart';
 import 'package:flashcards/src/utils/theme/theme_service.dart';
@@ -52,18 +53,18 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     final themeService = Provider.of<ThemeService>(context);
-    
+
     return MaterialApp(
       title: 'QuizApp',
       debugShowCheckedModeBanner: false,
       theme: TAppTheme.lightTheme,
       darkTheme: TAppTheme.darkTheme,
       themeMode: themeService.themeMode,
-      home: const MainScreen(),
+      home: const OnBoardingScreen(), // Start with OnBoardingScreen
     );
   }
 }
