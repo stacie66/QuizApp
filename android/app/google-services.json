@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "730093450926",
+    "firebase_url": "https://flashcards-d8007-default-rtdb.firebaseio.com",
+    "project_id": "flashcards-d8007",
+    "storage_bucket": "flashcards-d8007.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730093450926:android:2861c37db9b134df87df3f",
+        "android_client_info": {
+          "package_name": "com.example.flashcards"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "730093450926-noa49jhhupsqelaaun9me6kogp17d6on.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWNS9hEP90d3TbjMkFlxWYk3hkGRtVNlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "730093450926-noa49jhhupsqelaaun9me6kogp17d6on.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "730093450926-aisbfgprf98m7ovjp7kss776palm4jv5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flashcards"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730093450926:android:103a42fe940c873987df3f",
+        "android_client_info": {
+          "package_name": "com.example.quizapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "730093450926-noa49jhhupsqelaaun9me6kogp17d6on.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWNS9hEP90d3TbjMkFlxWYk3hkGRtVNlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "730093450926-noa49jhhupsqelaaun9me6kogp17d6on.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "730093450926-aisbfgprf98m7ovjp7kss776palm4jv5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flashcards"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

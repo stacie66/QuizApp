@@ -1,239 +1,294 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flashcards/src/utils/constants/colors.dart';
+import 'package:flashcards/src/features/services/user_service.dart';
+import 'package:flashcards/src/features/models/user_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final UserService _userService = UserService();
+  UserModel? _user;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final user = await _userService.getCurrentUser();
+      setState(() {
+        _user = user;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print("Error loading user data: $e");
+    }
+  }
+
+  Future<void> _updateProfilePicture() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (pickedFile == null) return;
+    
+    
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final file = File(pickedFile.path);
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_pictures/$userId.jpg');
+      
+      final uploadTask = storageRef.putFile(file);
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      
+      await _userService.updateUserProfile(profilePicture: downloadUrl);
+      await _loadUserData(); // Reload user data
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated!')),
+      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile picture. Please try again.')),
+      );
+    }
+  }
+
+  Widget _buildStatColumn(String value, String label) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfilePicture() {
+    return GestureDetector(
+      onTap: _updateProfilePicture,
+      child: Stack(
+        children: [
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.grey[200],
+            backgroundImage: _user?.profilePicture.isNotEmpty == true
+                ? NetworkImage(_user!.profilePicture)
+                : null,
+            child: _user?.profilePicture.isEmpty == true
+                ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                : null,
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.camera_alt,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          "Profile",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Profile'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.black),
-            onPressed: () {},
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Navigate to settings
+            },
           ),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              const CircleAvatar(
-                radius: 50,
-                backgroundImage: AssetImage('assets/images/default_profile.png'),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Eric Mwangi",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Mobile App Developer",
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatCard("Complete", "220"),
-                  _buildStatCard("Memorized", "100"),
-                  _buildStatCard("Streak", "14 days"),
-                ],
-              ),
-              const SizedBox(height: 32),
-              const Divider(),
-              const SizedBox(height: 16),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Your Collections",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _user == null
+              ? const Center(child: Text('User not found'))
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      _buildProfilePicture(),
+                      const SizedBox(height: 16),
+                      Text(
+                        _user!.name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        _user!.profession,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildStatColumn(_user!.cardsCompleted.toString(), 'Complete'),
+                            _buildStatColumn(_user!.cardsMemorized.toString(), 'Memorized'),
+                            _buildStatColumn('${_user!.streakDays} days', 'Streak'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 16.0, bottom: 8.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Your Collections',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_user!.collections.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('You have no collections yet'),
+                        )
+                      else
+                        Column(
+                          children: _user!.collections.map((collection) {
+                            return ListTile(
+                              leading: Icon(
+                                collection['name'] == 'Mobile App' ? Icons.phone_android : Icons.code,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                              title: Text(collection['name']),
+                              subtitle: Text('${collection['cardCount']} cards'),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () {
+                                // Navigate to collection
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      const SizedBox(height: 32),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 16.0, bottom: 8.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Menu',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.home),
+                        title: const Text('Home'),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      // Add more menu items as needed
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildCollectionItem(
-                "Mobile App",
-                "271 cards",
-                Icons.phone_android_outlined,
-                Colors.blue,
-              ),
-              const SizedBox(height: 12),
-              _buildCollectionItem(
-                "New Program",
-                "54 cards",
-                Icons.code_outlined,
-                Colors.green,
-              ),
-              const SizedBox(height: 32),
-              const Divider(),
-              const SizedBox(height: 16),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Menu",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildMenuItem(Icons.home, "Home"),
-              _buildMenuItem(Icons.credit_card, "Cards"),
-              _buildMenuItem(Icons.person, "Profile"),
-              _buildMenuItem(Icons.notifications, "Notifications"),
-              _buildMenuItem(Icons.calendar_today, "Calendar"),
-              const SizedBox(height: 16),
-              const Divider(),
-              const SizedBox(height: 16),
-              _buildMenuItem(Icons.settings, "Settings"),
-              _buildMenuItem(Icons.help_outline, "Help Center"),
-              _buildMenuItem(Icons.logout, "Log Out", isLogout: true),
-            ],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 3, // Profile tab
+        onTap: (index) {
+          if (index != 3) {
+            // Handle navigation away from profile
+            switch (index) {
+              case 0: // Home
+                Navigator.pop(context);
+                break;
+              case 1: // Flash Cards
+                Navigator.pushReplacementNamed(context, '/flashcards');
+                break;
+              case 2: // Chat
+                Navigator.pushReplacementNamed(context, '/chat');
+                break;
+            }
+          }
+        },
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value) {
-    return Container(
-      width: 100,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bookmark_border_outlined),
+            activeIcon: Icon(Icons.bookmark),
+            label: 'Flash Cards',
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            activeIcon: Icon(Icons.chat_bubble),
+            label: 'Chat',
           ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCollectionItem(String title, String count, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    count,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const Icon(Icons.arrow_forward_ios, size: 16),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(IconData icon, String title, {bool isLogout = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isLogout
-                  ? Colors.red.withOpacity(0.1)
-                  : TColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-                icon,
-                color: isLogout ? Colors.red : TColors.primary,
-                size: 20
-            ),
-          ),
-          const SizedBox(width: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: isLogout ? Colors.red : Colors.black,
-            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),
