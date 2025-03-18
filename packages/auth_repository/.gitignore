@@ -1,4 +1,8 @@
 # Miscellaneous
+.env
+.node_modules
+.test
+.packages/auth_repository
 *.class
 *.log
 *.pyc
